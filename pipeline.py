@@ -67,8 +67,18 @@ def run_pipeline(filepath):
     return model, X_combined, y_combined
 
 def predict_next(model, recent_draws, window=5):
-    input_vector = recent_draws.tail(window).values.flatten().reshape(1, -1)
-    prediction = model.predict(input_vector)[0]
+    # Apply same feature engineering
+    X_multi = pd.DataFrame([recent_draws.tail(window).values.flatten()])
+    X_freq = pd.DataFrame([recent_draws.tail(window).sum().tolist()])
+    cluster_id = KMeans(n_clusters=5, random_state=42).fit_predict(recent_draws)[-1]
+    cluster_df = pd.DataFrame([[cluster_id]], columns=["cluster_id"])
+
+    # Combine and clean
+    X_input = pd.concat([X_multi, X_freq, cluster_df], axis=1)
+    X_input.columns = [f"f{i}" for i in range(X_input.shape[1])]
+    X_input = X_input.apply(pd.to_numeric, errors='coerce').dropna(axis=1).reset_index(drop=True)
+
+    prediction = model.predict(X_input)[0]
     return [i+1 for i, val in enumerate(prediction) if val == 1]
 
 def build_leaderboard(model, data, window=5):
@@ -87,6 +97,7 @@ def build_leaderboard(model, data, window=5):
             "Match Count": len(match)
         })
     return pd.DataFrame(leaderboard)
+
 
 
 
