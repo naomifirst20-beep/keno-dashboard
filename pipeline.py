@@ -31,6 +31,12 @@ def cluster_labels(data, n_clusters=5):
 
 def run_pipeline(filepath):
     raw_data = load_draw_data(filepath)
+    # Safety check: ensure enough data for training
+    if len(raw_data) < 6:
+        raise ValueError(
+            "🚫 Not enough draw data to train the model. "
+            "Please ensure data/draws.csv contains at least 6 rows of valid Keno draws."
+        )
     X_multi, y_multi = multi_draw_features(raw_data)
     X_freq = frequency_features(raw_data)
     cluster_ids = cluster_labels(raw_data)
@@ -63,3 +69,4 @@ def build_leaderboard(model, data, window=5):
             "Match Count": len(match)
         })
     return pd.DataFrame(leaderboard)
+
