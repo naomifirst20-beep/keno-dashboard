@@ -1,15 +1,10 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from scraper import scrape_latest_draw
 from pipeline import load_draw_data, run_pipeline, predict_next, build_leaderboard
 
 st.set_page_config(page_title="Keno QuickCheck", layout="centered")
 st.title("🎯 Keno QuickCheck")
-
-# Refresh button
-if st.button("🔄 Refresh Prediction"):
-    st.experimental_rerun()
 
 # Load and train
 data = load_draw_data("data/draws.csv")
@@ -51,4 +46,3 @@ plt.xlabel("Draw Index")
 plt.ylabel("Matched Numbers")
 plt.title("Prediction Accuracy Trend")
 st.pyplot(plt)
-
