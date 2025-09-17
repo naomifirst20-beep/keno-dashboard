@@ -31,18 +31,23 @@ def cluster_labels(data, n_clusters=5):
 
 def run_pipeline(filepath):
     raw_data = load_draw_data(filepath)
-    # Safety check: ensure enough data for training
+
     if len(raw_data) < 6:
-        raise ValueError(
-            "🚫 Not enough draw data to train the model. "
-            "Please ensure data/draws.csv contains at least 6 rows of valid Keno draws."
-        )
+        raise ValueError("🚫 Not enough draw data to train the model. Add at least 6 rows to data/draws.csv.")
+
     X_multi, y_multi = multi_draw_features(raw_data)
     X_freq = frequency_features(raw_data)
     cluster_ids = cluster_labels(raw_data)
 
-    X_combined = pd.concat([X_multi, X_freq, cluster_ids.iloc[:-5]], axis=1)
-    y_combined = y_multi
+    # Align row counts
+    min_len = min(len(X_multi), len(X_freq), len(cluster_ids.iloc[:-5]))
+    X_multi = X_multi.iloc[:min_len]
+    X_freq = X_freq.iloc[:min_len]
+    cluster_ids = cluster_ids.iloc[:min_len]
+
+    # Combine and ensure numeric types
+    X_combined = pd.concat([X_multi, X_freq, cluster_ids], axis=1).astype(float)
+    y_combined = y_multi.iloc[:min_len]
 
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_combined, y_combined)
@@ -69,4 +74,5 @@ def build_leaderboard(model, data, window=5):
             "Match Count": len(match)
         })
     return pd.DataFrame(leaderboard)
+
 
