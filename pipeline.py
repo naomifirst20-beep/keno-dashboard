@@ -45,9 +45,22 @@ def run_pipeline(filepath):
     X_freq = X_freq.iloc[:min_len]
     cluster_ids = cluster_ids.iloc[:min_len]
 
-    # Combine and ensure numeric types
-    X_combined = pd.concat([X_multi, X_freq, cluster_ids], axis=1).astype(float)
-    y_combined = y_multi.iloc[:min_len]
+    # Combine features
+    X_combined = pd.concat([X_multi, X_freq, cluster_ids], axis=1)
+
+    # Clean feature names and types
+    X_combined.columns = [f"f{i}" for i in range(X_combined.shape[1])]
+    X_combined = X_combined.apply(pd.to_numeric, errors='coerce')
+    X_combined = X_combined.dropna(axis=1)  # Drop any columns with NaNs
+    X_combined = X_combined.reset_index(drop=True)
+
+    y_combined = y_multi.iloc[:min_len].reset_index(drop=True)
+
+    # Debug logging
+    print("🔍 Debug Info:")
+    print("X_combined shape:", X_combined.shape)
+    print("y_combined shape:", y_combined.shape)
+    print("X_combined types:\n", X_combined.dtypes)
 
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_combined, y_combined)
@@ -74,5 +87,6 @@ def build_leaderboard(model, data, window=5):
             "Match Count": len(match)
         })
     return pd.DataFrame(leaderboard)
+
 
 
