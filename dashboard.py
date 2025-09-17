@@ -9,7 +9,6 @@ st.title("🎯 Keno QuickCheck")
 
 # Refresh button
 if st.button("🔄 Refresh Prediction"):
-    scrape_latest_draw()
     st.experimental_rerun()
 
 # Load and train
@@ -52,3 +51,4 @@ plt.xlabel("Draw Index")
 plt.ylabel("Matched Numbers")
 plt.title("Prediction Accuracy Trend")
 st.pyplot(plt)
+
